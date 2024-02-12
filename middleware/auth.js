@@ -3,7 +3,7 @@ const User = require("../model/user");
 require('dotenv').config();
 
 async function authenticateToken(req, res, next) {
-  const token = req.cookies.token || req.params.token || req.headers['x-access-token'] || req.headers['authorization'];
+  const token = req.cookies.token || req.params.token;
 
   if (!token) {
     return res.send('Access denied');

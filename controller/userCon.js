@@ -31,7 +31,14 @@ logIn = async (req, res) => {
       if (user && (await bcrypt.compare(password, user.password))) {
         const token = jwt.sign({ id: user._id },process.env.SECRET_KEY);
         res.cookie("token",token)
-        res.status(200).send('Logged in');   
+     
+        if(user.isOtpVerified==false){
+          res.json({statusCode:'201',message: 'OTP not verified'})
+        } else if(user.isProfilecomplete==false){
+          res.json({statusCode:'202',message: 'Profile not completed'})
+        }else{
+          res.json({statusCode:'200',message: 'Logged in' ,token:token})
+        } 
       } else {
         res.status(404).send('Invalid username or password');
       }
@@ -70,7 +77,7 @@ sendOtp = async (req, res) => {
   res.status(200).send('OTP sent');
 }
 
-const verifyOtp = async (req, res) => {
+verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({ email });
@@ -94,6 +101,33 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+completeProfile = async (req, res) => {
+  const { name,phone } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    user.name = name;
+    user.phone = phone;
+    
+    await User.findOneAndUpdate({isProfilecomplete: true})
+    await user.save();
+
+    res.status(200).send('Profile completed successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+index = async (req, res) => {
+ res.send("Welcome To Home");
+}
+
 
 
 module.exports = {
@@ -101,5 +135,7 @@ module.exports = {
     logIn,
     logOut,
     sendOtp,
-    verifyOtp
+    verifyOtp,
+    completeProfile,
+    index
 }
