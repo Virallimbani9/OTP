@@ -47,6 +47,8 @@ logOut = async (req, res) => {
   res.send('Logged out');
 }
 
+// -------------------------- OTP --------------------------
+
 sendOtp = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -54,7 +56,7 @@ sendOtp = async (req, res) => {
     res.status(404).send('User not found');
   }
   const otp = Math.floor(100000 + Math.random() * 900000);
-  const otpToken = jwt.sign({ userId: user._id, otp }, process.env.OTP_SECRET_KEY, { expiresIn: '2m' });
+  const otpToken = jwt.sign({ userId: user._id, otp }, process.env.OTP_SECRET_KEY, { expiresIn: '1m' });
 
   user.otp = otpToken;
   user.otpCreatedAt = new Date();  
