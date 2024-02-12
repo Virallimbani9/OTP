@@ -12,11 +12,10 @@ signUp = async (req, res) => {
     try {
       const user = new User({email,password: hashedPassword});
       await user.save();
-      res.status(200).send('User created');
-      console.log('Status Code:', res.statusCode);
+      res.json({statusCode:'200',message:'Sign Up Done'})
         } catch (error) {
           console.log(error)
-      res.status(404).send('Error creating user');
+      res.json({statusCode:'404',message:'Error creating user'})
     }
 };
 
@@ -51,7 +50,7 @@ logIn = async (req, res) => {
 logOut = async (req, res) => {
 
   res.clearCookie("token")
-  res.send('Logged out');
+  res.json({statusCode:'200',message:'Logout'})
 }
 
 // -------------------------- OTP --------------------------
@@ -60,7 +59,7 @@ sendOtp = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    res.status(404).send('User not found');
+    res.json({statusCode :'404',message:'User not found'})
   }
   const otp = Math.floor(100000 + Math.random() * 900000);
   const otpToken = jwt.sign({ userId: user._id, otp }, process.env.OTP_SECRET_KEY, { expiresIn: '1m' });
@@ -74,7 +73,7 @@ sendOtp = async (req, res) => {
     message: `Your OTP for Verfication is ${otp}`,
   };
   sendMail(option);
-  res.status(200).send('OTP sent');
+  res.json({statusCode :'200',message:'OTP Send'})
 }
 
 verifyOtp = async (req, res) => {
@@ -82,7 +81,7 @@ verifyOtp = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-      return res.status(404).send('User not found');
+      return res.json({statusCode :'404',message:'User not found'})
   }
 
   try {
@@ -91,13 +90,13 @@ verifyOtp = async (req, res) => {
 
       if (decoded.otp === otp) {
           await User.findOneAndUpdate({isOtpVerified: true})
-          return res.status(200).send('OTP verified');
+          return res.json({statusCode :'200',message:'OTP verified'});
       } else {
-          return res.status(401).send('Invalid OTP');
+          return res.json({statusCode :'401',message:'Invalid OTP'})
       }
   } catch (error) {
       console.error(error);
-      return res.status(500).send('Internal Server Error');
+      return res.json({statusCode:'500',message:"Internal Server Error"})
   }
 };
 
@@ -109,7 +108,7 @@ completeProfile = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).send('User not found');
+      return res.json({statusCode :'404',message:'User not found'})
     }
     user.name = name;
     user.phone = phone;
@@ -117,10 +116,10 @@ completeProfile = async (req, res) => {
     await User.findOneAndUpdate({isProfilecomplete: true})
     await user.save();
 
-    res.status(200).send('Profile completed successfully');
+    res.json({statusCode :'200',message:'Profile completed successfully'});
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.json({statusCode:'500',message:"Internal Server Error"})
   }
 };
 
