@@ -73,7 +73,6 @@ sendOtp = async (req, res) => {
 const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
-  // Check if the user exists
   const user = await User.findOne({ email });
   if (!user) {
       return res.status(404).send('User not found');
