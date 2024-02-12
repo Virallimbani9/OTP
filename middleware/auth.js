@@ -6,7 +6,7 @@ async function authenticateToken(req, res, next) {
   const token = req.cookies.token || req.params.token;
 
   if (!token) {
-    return res.send('Access denied');
+    return res.json({statuscode:'403',message:'Access denied'})
   }
 
   try {
@@ -14,13 +14,13 @@ async function authenticateToken(req, res, next) {
     const user = await User.findOne({ _id: decodedData.id });
 
     if (!user) {
-       return res.send('Access denied');
+       return res.json({statuscode:'403',message:'Access denied'})
     }
     req.token = token;
     req.user = user;
     next();
   } catch (err) {
-    return res.status(403).send('Invalid token');
+    return res.json({statuscode:'403',message:'Invalid token'})
   }
 }
 
