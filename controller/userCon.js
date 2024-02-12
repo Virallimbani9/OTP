@@ -54,9 +54,10 @@ sendOtp = async (req, res) => {
     res.status(404).send('User not found');
   }
   const otp = Math.floor(100000 + Math.random() * 900000);
-  user.otp = otp;
-  user.otpCreatedAt = new Date();
-  
+  const otpToken = jwt.sign({ userId: user._id, otp }, process.env.OTP_SECRET_KEY, { expiresIn: '2m' });
+
+  user.otp = otpToken;
+  user.otpCreatedAt = new Date();  
   await user.save();
   const option = {
     email: user.email,
@@ -67,18 +68,30 @@ sendOtp = async (req, res) => {
   res.status(200).send('OTP sent');
 }
 
-verifyOtp = async (req, res) => {
+const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
-  const user = await User.findOne({ email });
 
+  // Check if the user exists
+  const user = await User.findOne({ email });
   if (!user) {
-    res.status(404).send('User not found');
-  } else if (user.otp == otp) {
-    res.status(200).send('OTP verified');
-  } else if (user.otp != otp) {
-    res.status(401).send('Invalid OTP');
+      return res.status(404).send('User not found');
   }
-}
+
+  try {
+      
+      const decoded = jwt.verify(user.otp, process.env.OTP_SECRET_KEY);
+
+      if (decoded.otp === otp) {
+          await User.findOneAndUpdate({isOtpVerified: true})
+          return res.status(200).send('OTP verified');
+      } else {
+          return res.status(401).send('Invalid OTP');
+      }
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send('Internal Server Error');
+  }
+};
 
 
 

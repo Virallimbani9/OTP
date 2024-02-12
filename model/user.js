@@ -32,17 +32,16 @@ const UserSchema =  mongoose.Schema({
     isProfilecomplete:{
         type:Boolean,
         default:false
+    },
+    isOtpVerified:{
+        type:Boolean,
+        default:false
     }, 
     otp: {
-        type: Number,
-        trim: true,
-        index: {expires:'1m'},
-
-    },
-    otpCreatedAt: { type: Date },
-    
-},timestamp=true);
-
+        type: String,
+        trim: true
+      },
+ });
 
 
 
