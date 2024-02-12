@@ -1,0 +1,26 @@
+const jwt = require('jsonwebtoken');
+const User = require("../model/user");
+require('dotenv').config();
+
+async function authenticateToken(req, res, next) {
+  const token = req.cookies.token || req.params.token;
+
+  if (!token) {
+    return res.send('Access denied');
+  }
+
+  try {
+    const decodedData = jwt.verify(token, process.env.SECRET_KEY);
+    const user = await User.findOne({ _id: decodedData.id });
+
+    if (!user) {
+       return res.send('Access denied');
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    return res.status(403).send('Invalid token');
+  }
+}
+
+module.exports = authenticateToken;
